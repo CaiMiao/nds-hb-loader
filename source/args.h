@@ -44,6 +44,6 @@ bool argsFillArray(const std::string& filePath, std::vector<std::string>& argarr
  */
 std::vector<std::string> argsGetExtensionList();
 
-bool toAbsPath(std::string filename, std::string basePath, std::string& filePath);
+bool toAbsPathCwd(std::string filename, std::string& filePath);
 
 #endif // ARGS_H

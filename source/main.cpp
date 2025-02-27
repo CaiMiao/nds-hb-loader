@@ -49,6 +49,7 @@ void stop (void) {
 volatile bool top_screen_initialized = false;
 volatile bool console_initialized = false;
 volatile bool isConfig = false;
+volatile bool isSkipExe = false;
 
 void initTopScreen() {
 	if (top_screen_initialized) return;
@@ -72,9 +73,13 @@ static std::string getExecPath(const HBLDR_CONFIGS& confs) {
 
 	scanKeys();
 
-	switch(keysHeld() & (KEY_A | KEY_B | KEY_X | KEY_Y | KEY_UP | KEY_DOWN | KEY_LEFT | KEY_RIGHT)) {
+	switch(keysHeld() & (KEY_A | KEY_B | KEY_X | KEY_Y | KEY_UP | KEY_DOWN | KEY_LEFT | KEY_RIGHT
+		| KEY_L | KEY_R | KEY_SELECT | KEY_START)) {
 		case KEY_A | KEY_B:
 			isConfig = true;
+			break;
+		case KEY_SELECT:
+			isSkipExe = true;
 			break;
 		case KEY_A:
 		case KEY_RIGHT:
@@ -92,6 +97,12 @@ static std::string getExecPath(const HBLDR_CONFIGS& confs) {
 		case KEY_LEFT:
 			memcpy(executable_path, confs.hk_y.path, sizeof(confs.hk_y.path));
 			break;
+		case KEY_L:
+			memcpy(executable_path, confs.hk_l.path, sizeof(confs.hk_l.path));
+			break;
+		case KEY_R:
+			memcpy(executable_path, confs.hk_r.path, sizeof(confs.hk_r.path));
+			break;
 		default:
 			memcpy(executable_path, confs.hk_none.path, sizeof(confs.hk_none.path));
 			break;
@@ -99,6 +110,16 @@ static std::string getExecPath(const HBLDR_CONFIGS& confs) {
 
 	executable_path[127] = 0;
 	return executable_path;
+}
+
+bool checkPath(std::string path) {
+	std::string mp[] = {"/", "fat:/", "sd:/"};
+	for (auto s : mp)
+	{
+		if(path.starts_with(s))
+			return true;
+	}
+	return false;
 }
 
 //---------------------------------------------------------------------------------
@@ -125,8 +146,8 @@ int main(int argc, char **argv) {
 	readConfigsFromFile(&confs);
 
 	const auto executable_path = getExecPath(confs);
-	// if(executable_path.starts_with(cwd) { // todo?: root sel?
-	if(executable_path.starts_with("/")) { // calico fatInitDefault() uses slashed root fwiw
+	// if(executable_path.starts_with(cwd)) { // todo?: root sel?
+	if(!isSkipExe && checkPath(executable_path)) {
 		std::vector<std::string> argarray;
 		int err = 10;
 		if(argsFillArray(executable_path, argarray)) {
@@ -139,7 +160,7 @@ int main(int argc, char **argv) {
 				"Press START to continue boot.\n"
 				"You can change the autoboot\n"
 				"settings by holding A+B on\n"
-				"launch", executable_path.data(), err);
+				"launch", argarray[0].c_str(), err);
 		while(1) {
 			swiWaitForVBlank();
 			scanKeys();

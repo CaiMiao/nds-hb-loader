@@ -141,13 +141,20 @@ static bool toAbsPath(const string& filename, const char* basePath, string& file
 
 	if (basePath == NULL) {
 		// Get current working directory (uses C-strings)
-		vector<char> cwd(PATH_MAX);
-		if (getcwd (cwd.data(), cwd.size()) == NULL) {
+		// vector<char> cwd(PATH_MAX);
+		char *cwd = getcwd (NULL, 0);
+		// if (getcwd (cwd.data(), cwd.size()) == NULL) {
+		if (strlen(cwd) > PATH_MAX) {
 			// Path was too long, abort
 			return false;
 		}
+		if (filename.starts_with(cwd)) {
+			filePath = filename;
+			return true;
+		}
 		// Copy CWD into path
-		filePath = cwd.data();
+		// filePath = cwd.data();
+		filePath = cwd;
 	} else {
 		// Just copy the base path
 		filePath = basePath;
@@ -164,12 +171,12 @@ static bool toAbsPath(const string& filename, const char* basePath, string& file
 	return true;
 }
 
-bool toAbsPath2(std::string filename, std::string basePath, std::string& filePath) {
+bool toAbsPathCwd(std::string filename, std::string& filePath) {
 	if (filename.starts_with("fat:/")) {
 		filePath = filename;
 		return true;
 	}
-	return toAbsPath(filename, basePath.c_str(), filePath);
+	return toAbsPath(filename, NULL, filePath);
 }
 
 /* Convert a dataFilePath to the path of the ext file that specifies the

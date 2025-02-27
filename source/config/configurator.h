@@ -16,6 +16,8 @@ typedef struct HBLDR_CONFIGS {
 	ENTRY hk_b;
 	ENTRY hk_x;
 	ENTRY hk_y;
+	ENTRY hk_l;
+	ENTRY hk_r;
 	ENTRY hk_none;
 } HBLDR_CONFIGS;
 

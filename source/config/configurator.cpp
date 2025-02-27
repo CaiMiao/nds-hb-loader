@@ -14,11 +14,15 @@
 
 const char default_configs_path[] = "fat:/_nds/hbloader_hotkeys.conf";
 
+int entry_count = 7;
+
 static struct HBLDR_CONFIGS default_configs = {
 	.hk_a = {{0}},
 	.hk_b = {{0}},
 	.hk_x = {{0}},
 	.hk_y = {{0}},
+	.hk_l = {{0}},
+	.hk_r = {{0}},
 	.hk_none = {{0}},
 };
 
@@ -39,6 +43,10 @@ char* getEntryPath(int off, struct HBLDR_CONFIGS* configs) {
 			return configs->hk_x.path;
 		case 4:
 			return configs->hk_y.path;
+		case 5:
+			return configs->hk_l.path;
+		case 6:
+			return configs->hk_r.path;
 		default:
 			__builtin_unreachable();
 	}
@@ -53,7 +61,7 @@ bool readConfigsFromFile(struct HBLDR_CONFIGS* configs) {
 		return copyDefaultConfigs(configs);
 	}
 	char line[sizeof(ENTRY::path) + 1]; // newline character would be included
-	for(int i = 0; i < 5; ++i) {
+	for(int i = 0; i < entry_count; ++i) {
 		if(!fgets(line, sizeof(line), file)) {
 			iprintf("\x1b[2J");
 			iprintf("Invalid config file\n");
@@ -90,7 +98,7 @@ bool dumpConfigsToFile(struct HBLDR_CONFIGS* configs) {
 		iprintf("failed to create %s\n", default_configs_path);
 		return false;
 	}
-	for(int i = 0; i < 5; ++i) {
+	for(int i = 0; i < entry_count; ++i) {
 		auto* path = getEntryPath(i, configs);
 		fwrite(path, 1, strlen(path), file);
 		fwrite("\n", 1, 1, file);
@@ -142,6 +150,8 @@ void configMenu(struct HBLDR_CONFIGS* configs) {
 		printEntry("B/DOWN ", configs->hk_b);
 		printEntry("X/UP   ", configs->hk_x);
 		printEntry("Y/LEFT ", configs->hk_y);
+		printEntry("L      ", configs->hk_l);
+		printEntry("R      ", configs->hk_r);
 		
 		auto restoreOffset = totalEntries;
 		printEntry("LOAD FROM FILE", restoreOffset);
@@ -225,7 +235,7 @@ void configMenu(struct HBLDR_CONFIGS* configs) {
 				} else {
 					auto entry = browseForFile({".nds", ".dsi", ".srl", ".srldr", "argv"});
 					std::string absPath;
-					toAbsPath(entry, {}, absPath);
+					toAbsPathCwd(entry, absPath);
 					if(absPath.size() >= sizeof(ENTRY::path)) {
 						iprintf("\x1b[2J");
 						printErrorAndWaitForA("File path too long.");
