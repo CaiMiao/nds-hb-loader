@@ -42,6 +42,16 @@ bool installBootStub(bool havedsiSD);
 void installExcptStub(void);
 
 #ifdef __cplusplus
+	#include <vector>
+
+	extern "C++"
+		template<typename T> int runNdsFile(const T & argarray) {
+		std::vector<const char*> c_args;
+		for(const auto& arg : argarray) {
+			c_args.push_back(arg.data());
+		}
+		return runNdsFile(c_args[0], c_args.size(), &c_args[0]);
+	}
 }
 #endif
 

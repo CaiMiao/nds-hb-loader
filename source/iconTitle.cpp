@@ -135,6 +135,13 @@ void iconTitleInit (void) {
 	writeRow (3,"...otherwise, trouble!)");
 }
 
+void clearIconTitle() {
+	writeRow(0, "");
+	writeRow(1, "");
+	writeRow(2, "");
+	writeRow(3, "");
+	clearIcon();
+}
 
 void iconTitleUpdate (int isdir, const std::string& name) {
 	writeRow (0, name.c_str());

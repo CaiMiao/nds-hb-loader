@@ -23,3 +23,4 @@
 
 void iconTitleInit (void);
 void iconTitleUpdate (int isdir, const std::string& name);
+void clearIconTitle (void);

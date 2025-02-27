@@ -164,6 +164,14 @@ static bool toAbsPath(const string& filename, const char* basePath, string& file
 	return true;
 }
 
+bool toAbsPath2(std::string filename, std::string basePath, std::string& filePath) {
+	if (filename.starts_with("fat:/")) {
+		filePath = filename;
+		return true;
+	}
+	return toAbsPath(filename, basePath.c_str(), filePath);
+}
+
 /* Convert a dataFilePath to the path of the ext file that specifies the
  * handler.
  * Returns true on success, false on failure

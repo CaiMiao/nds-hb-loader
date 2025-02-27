@@ -27,6 +27,7 @@
 
 std::string browseForFile (const std::vector<std::string>& extensionList);
 
+#define SCREEN_COLS 32
 
 
 #endif //FILE_BROWSE_H

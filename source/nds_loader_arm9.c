@@ -187,7 +187,9 @@ eRunNdsRetCode runNdsFile (const char* filename, int argc, const char** argv)  {
 	bool havedsiSD = false;
 
 	if(argv[0][0]=='s' && argv[0][1]=='d') havedsiSD = true;
-
+#ifdef _NO_BOOTSTUB_OVERRIDE_
+	if (!pmHasResetJumpTarget())
+#endif
 	installBootStub(havedsiSD);
 
 	return runNds (load_bin, load_bin_size, st.st_ino, argc, argv);

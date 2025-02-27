@@ -23,9 +23,9 @@ VERSION	:=	$(HBMENU_MAJOR).$(HBMENU_MINOR).$(HBMENU_PATCH)
 # DATA is a list of directories containing binary files embedded using bin2o
 # GRAPHICS is a list of directories containing image files to be converted with grit
 #---------------------------------------------------------------------------------
-TARGET		:=	hbmenu
+TARGET		:=	hbloader
 BUILD		:=	build
-SOURCES		:=	source
+SOURCES		:=	source source/config
 INCLUDES	:=	include
 DATA		:=	data
 GRAPHICS	:=  gfx
@@ -35,17 +35,17 @@ GRAPHICS	:=  gfx
 #---------------------------------------------------------------------------------
 ARCH	:=	-mthumb -mthumb-interwork
 
-CFLAGS	:=	-g -Wall -O2 \
+CFLAGS	:=	-g -Wall -Os \
 		-ffunction-sections -fdata-sections \
  		-march=armv5te -mtune=arm946e-s -fomit-frame-pointer\
-		-ffast-math \
+		-ffast-math -flto \
 		$(ARCH)
 
 CFLAGS	+=	$(INCLUDE) -DARM9
-CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions
+CXXFLAGS	:= $(CFLAGS) -fno-rtti -fno-exceptions -std=gnu++20
 
 ASFLAGS	:=	-g $(ARCH)
-LDFLAGS	=	-specs=ds_arm9.specs -g -Wl,--gc-sections $(ARCH) -Wl,-Map,$(notdir $*.map)
+LDFLAGS	=	-specs=ds_arm9.specs -g -Wl,--gc-sections $(ARCH) -Wl,-Map,$(notdir $*.map) -flto
 
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project (order is important)

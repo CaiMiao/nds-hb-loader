@@ -34,6 +34,7 @@
 #include "iconTitle.h"
 #include "nds_loader_arm9.h"
 
+#include "config/configurator.h"
 
 using namespace std;
 
@@ -45,34 +46,127 @@ void stop (void) {
 	}
 }
 
-//---------------------------------------------------------------------------------
-int main(int argc, char **argv) {
-//---------------------------------------------------------------------------------
+volatile bool top_screen_initialized = false;
+volatile bool console_initialized = false;
+volatile bool isConfig = false;
 
-	// overwrite reboot stub identifier
-	// so tapping power on DSi returns to DSi menu
-	pmClearResetJumpTarget();
-
-	// install exception stub
-	installExcptStub();
-
+void initTopScreen() {
+	if (top_screen_initialized) return;
 	iconTitleInit();
+	top_screen_initialized = true;
+}
+
+void initConsole() {
+	if (console_initialized) return;
 
 	// Subscreen as a console
 	videoSetModeSub(MODE_0_2D);
 	vramSetBankH(VRAM_H_SUB_BG);
 	consoleInit(NULL, 0, BgType_Text4bpp, BgSize_T_256x256, 15, 0, false, true);
 
+	console_initialized = true;
+}
+
+static std::string getExecPath(const HBLDR_CONFIGS& confs) {
+	static char executable_path[128];
+
+	scanKeys();
+
+	switch(keysHeld() & (KEY_A | KEY_B | KEY_X | KEY_Y | KEY_UP | KEY_DOWN | KEY_LEFT | KEY_RIGHT)) {
+		case KEY_A | KEY_B:
+			isConfig = true;
+			break;
+		case KEY_A:
+		case KEY_RIGHT:
+			memcpy(executable_path, confs.hk_a.path, sizeof(confs.hk_a.path));
+			break;
+		case KEY_B:
+		case KEY_DOWN:
+			memcpy(executable_path, confs.hk_b.path, sizeof(confs.hk_b.path));
+			break;
+		case KEY_X:
+		case KEY_UP:
+			memcpy(executable_path, confs.hk_x.path, sizeof(confs.hk_x.path));
+			break;
+		case KEY_Y:
+		case KEY_LEFT:
+			memcpy(executable_path, confs.hk_y.path, sizeof(confs.hk_y.path));
+			break;
+		default:
+			memcpy(executable_path, confs.hk_none.path, sizeof(confs.hk_none.path));
+			break;
+	}
+
+	executable_path[127] = 0;
+	return executable_path;
+}
+
+//---------------------------------------------------------------------------------
+int main(int argc, char **argv) {
+//---------------------------------------------------------------------------------
+
+	// overwrite reboot stub identifier
+	// so tapping power on DSi returns to DSi menu
+	// pmClearResetJumpTarget();
+
+	// install exception stub
+	installExcptStub();
+
 	if (!fatInitDefault()) {
+		initConsole();
 		iprintf ("fatinitDefault failed!\n");
 		stop();
 	}
 
+	if(argv[0][0]=='c' && argv[0][1]=='f' && argv[0][2]=='g') isConfig = true;
+	// char* cwd = getcwd(NULL, 0);
+
+	HBLDR_CONFIGS confs;
+	readConfigsFromFile(&confs);
+
+	const auto executable_path = getExecPath(confs);
+	// if(executable_path.starts_with(cwd) { // todo?: root sel?
+	if(executable_path.starts_with("/")) { // calico fatInitDefault() uses slashed root fwiw
+		std::vector<std::string> argarray;
+		int err = 10;
+		if(argsFillArray(executable_path, argarray)) {
+			err = runNdsFile(argarray);
+		}
+		initConsole();
+		initTopScreen();
+		iprintf("Failed to start\n%s.\n"
+				"Error %i.\n"
+				"Press START to continue boot.\n"
+				"You can change the autoboot\n"
+				"settings by holding A+B on\n"
+				"launch", executable_path.data(), err);
+		while(1) {
+			swiWaitForVBlank();
+			scanKeys();
+			if((keysHeld() & KEY_START)) break;
+		}
+	}
+
+	initConsole();
+	initTopScreen();
+
 	keysSetRepeat(25,5);
+
+	if(isConfig) {
+		configMenu(&confs);
+	}
+
+	// while(1) {
+	// 	iprintf("cmd: %s", executable_path);
+	// 	swiWaitForVBlank();
+	// 	scanKeys();
+	// 	if((keysHeld() & KEY_START)) break;
+	// }
 
 	vector<string> extensionList = argsGetExtensionList();
 
-	chdir("/nds");
+	// chdir(cwd);
+	chdir("fat:/");
 
 	while(pmMainLoop()) {
 
