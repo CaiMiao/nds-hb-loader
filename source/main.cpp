@@ -139,7 +139,7 @@ int main(int argc, char **argv) {
 		stop();
 	}
 
-	if(argv[0][0]=='c' && argv[0][1]=='f' && argv[0][2]=='g') isConfig = true;
+	if (argc >=2 && argv[1][0]=='c' && argv[1][1]=='f' && argv[1][2]=='g') isConfig = true;
 	// char* cwd = getcwd(NULL, 0);
 
 	HBLDR_CONFIGS confs;
@@ -147,7 +147,7 @@ int main(int argc, char **argv) {
 
 	const auto executable_path = getExecPath(confs);
 	// if(executable_path.starts_with(cwd)) { // todo?: root sel?
-	if(!isSkipExe && checkPath(executable_path)) {
+	if(!isSkipExe && !isConfig && checkPath(executable_path)) {
 		std::vector<std::string> argarray;
 		int err = 10;
 		if(argsFillArray(executable_path, argarray)) {
@@ -177,12 +177,12 @@ int main(int argc, char **argv) {
 		configMenu(&confs);
 	}
 
-	// while(1) {
-	// 	iprintf("cmd: %s", executable_path);
-	// 	swiWaitForVBlank();
-	// 	scanKeys();
-	// 	if((keysHeld() & KEY_START)) break;
-	// }
+	// if (isSkipExe)
+	// 	while(1) {
+	// 		swiWaitForVBlank();
+	// 		scanKeys();
+	// 		if((keysHeld() & KEY_START)) break;
+	// 	}
 
 	vector<string> extensionList = argsGetExtensionList();
 
