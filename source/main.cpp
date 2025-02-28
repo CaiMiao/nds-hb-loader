@@ -142,8 +142,9 @@ int main(int argc, char **argv) {
 	if (argc >=2 && argv[1][0]=='c' && argv[1][1]=='f' && argv[1][2]=='g') isConfig = true;
 	// char* cwd = getcwd(NULL, 0);
 
-	HBLDR_CONFIGS confs;
-	readConfigsFromFile(&confs);
+	HBLDR_CONFIGS confs{};
+	// First run or invalid config file
+	if (!readConfigsFromFile(&confs)) isConfig = true;
 
 	const auto executable_path = getExecPath(confs);
 	// if(executable_path.starts_with(cwd)) { // todo?: root sel?

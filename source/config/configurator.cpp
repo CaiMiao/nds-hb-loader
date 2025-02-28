@@ -16,20 +16,20 @@ const char default_configs_path[] = "fat:/_nds/hbloader_hotkeys.conf";
 
 int entry_count = 7;
 
-static struct HBLDR_CONFIGS default_configs = {
-	.hk_a = {{0}},
-	.hk_b = {{0}},
-	.hk_x = {{0}},
-	.hk_y = {{0}},
-	.hk_l = {{0}},
-	.hk_r = {{0}},
-	.hk_none = {{0}},
-};
+// static struct HBLDR_CONFIGS default_configs = {
+// 	.hk_a = {{0}},
+// 	.hk_b = {{0}},
+// 	.hk_x = {{0}},
+// 	.hk_y = {{0}},
+// 	.hk_l = {{0}},
+// 	.hk_r = {{0}},
+// 	.hk_none = {{0}},
+// };
 
-bool copyDefaultConfigs(struct HBLDR_CONFIGS* configs) {
-	memcpy(configs, (void*)&default_configs, sizeof(default_configs));
-	return true;
-}
+// bool copyDefaultConfigs(struct HBLDR_CONFIGS* configs) {
+// 	memcpy(configs, (void*)&default_configs, sizeof(default_configs));
+// 	return true;
+// }
 
 char* getEntryPath(int off, struct HBLDR_CONFIGS* configs) {
 	switch(off) {
@@ -58,7 +58,8 @@ bool readConfigsFromFile(struct HBLDR_CONFIGS* configs) {
 	if(!file) {
 		iprintf("\x1b[2J");
 		iprintf("config %s\nnot found\n", default_configs_path);
-		return copyDefaultConfigs(configs);
+		// copyDefaultConfigs(configs);
+		return false;
 	}
 	char line[sizeof(ENTRY::path) + 1]; // newline character would be included
 	for(int i = 0; i < entry_count; ++i) {
