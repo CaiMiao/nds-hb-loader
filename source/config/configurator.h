@@ -7,8 +7,10 @@
 extern "C" {
 #endif
 
+#define ENTRY_SIZE 256
+
 typedef struct ENTRY {
-	char path[128];
+	char path[ENTRY_SIZE];
 } ENTRY;
 
 typedef struct HBLDR_CONFIGS {

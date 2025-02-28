@@ -69,7 +69,7 @@ void initConsole() {
 }
 
 static std::string getExecPath(const HBLDR_CONFIGS& confs) {
-	static char executable_path[128];
+	static char executable_path[ENTRY_SIZE];
 
 	scanKeys();
 
@@ -108,12 +108,12 @@ static std::string getExecPath(const HBLDR_CONFIGS& confs) {
 			break;
 	}
 
-	executable_path[127] = 0;
+	executable_path[ENTRY_SIZE - 1] = 0;
 	return executable_path;
 }
 
-bool checkPath(std::string path) {
-	std::string mp[] = {"/", "fat:/", "sd:/"};
+bool checkPath(const std::string& path) {
+	const std::string mp[] = {"/", "fat:/", "sd:/"};
 	for (auto s : mp)
 	{
 		if(path.starts_with(s))
@@ -161,7 +161,7 @@ int main(int argc, char **argv) {
 				"You can change the autoboot\n"
 				"settings by holding A+B on\n"
 				"launch", argarray[0].c_str(), err);
-		while(1) {
+		while(pmMainLoop()) {
 			swiWaitForVBlank();
 			scanKeys();
 			if((keysHeld() & KEY_START)) break;
@@ -178,7 +178,7 @@ int main(int argc, char **argv) {
 	}
 
 	// if (isSkipExe)
-	// 	while(1) {
+	// 	while(pmMainLoop()) {
 	// 		swiWaitForVBlank();
 	// 		scanKeys();
 	// 		if((keysHeld() & KEY_START)) break;

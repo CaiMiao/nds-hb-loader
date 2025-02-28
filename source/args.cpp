@@ -40,12 +40,19 @@ static const string EXT_EXT = ".ext";
 static const char EXT_DIR[] = "/nds";
 static const char SEPARATORS[] = "\n\r\t ";
 
+static const vector<string> EXE_EXTS = {".nds", ".dsi", ".srl", ".srldr"};
+
 /* Checks if s1 ends with s2, ignoring case.
    Returns true if it does, false otherwise.
  */
 static bool strCaseEnd(const string& s1, const string& s2) {
 	return (s1.size() >= s2.size() &&
 			strcasecmp(s1.c_str() + s1.size() - s2.size(), s2.c_str()) == 0);
+}
+
+static bool strCaseEnd(const string& str, const vector<string>& set) {
+	for (auto s : set) if (strCaseEnd(str, s)) return true;
+	return false;
 }
 
 /* Parses the contents of the file given by filename into argarray. Arguments
@@ -141,20 +148,18 @@ static bool toAbsPath(const string& filename, const char* basePath, string& file
 
 	if (basePath == NULL) {
 		// Get current working directory (uses C-strings)
-		// vector<char> cwd(PATH_MAX);
-		char *cwd = getcwd (NULL, 0);
-		// if (getcwd (cwd.data(), cwd.size()) == NULL) {
-		if (strlen(cwd) > PATH_MAX) {
+		vector<char> cwd(PATH_MAX);
+		if (getcwd (cwd.data(), cwd.size()) == NULL) {
 			// Path was too long, abort
 			return false;
 		}
-		if (filename.starts_with(cwd)) {
+		// let me trust paths matches cwd.
+		if (filename.starts_with(cwd.data())) {
 			filePath = filename;
 			return true;
 		}
 		// Copy CWD into path
-		// filePath = cwd.data();
-		filePath = cwd;
+		filePath = cwd.data();
 	} else {
 		// Just copy the base path
 		filePath = basePath;
@@ -171,7 +176,7 @@ static bool toAbsPath(const string& filename, const char* basePath, string& file
 	return true;
 }
 
-bool toAbsPathCwd(std::string filename, std::string& filePath) {
+bool toAbsPathCwd(const std::string& filename, std::string& filePath) {
 	if (filename.starts_with("fat:/")) {
 		filePath = filename;
 		return true;
@@ -208,7 +213,7 @@ static bool toExtPath(const string& dataFilePath, string& extFilePath) {
 }
 
 bool argsNdsPath(const std::string& filePath, std::string& ndsPath) {
-	if (strCaseEnd(filePath, NDS_EXT)) {
+	if (strCaseEnd(filePath, EXE_EXTS)) {
 		ndsPath = filePath;
 		return true;
 	} else	if (strCaseEnd(filePath, ARG_EXT)) {
@@ -234,7 +239,7 @@ bool argsFillArray(const string& filePath, vector<string>& argarray) {
 	// Ensure argarray is empty
 	argarray.clear();
 
-	if (strCaseEnd(filePath, NDS_EXT)) {
+	if (strCaseEnd(filePath, EXE_EXTS)) {
 		string absPath;
 		if (!toAbsPath(filePath, NULL, absPath)) {
 			return false;
@@ -277,14 +282,16 @@ bool argsFillArray(const string& filePath, vector<string>& argarray) {
 		argarray.push_back(move(absPath));
 	}
 
-	return argarray.size() > 0 && strCaseEnd(argarray[0], NDS_EXT);
+	return argarray.size() > 0 && strCaseEnd(argarray[0], EXE_EXTS);
 }
 
 vector<string> argsGetExtensionList() {
 	vector<string> extensionList;
 
 	// Always supported files: NDS binaries and predefined argument lists
-	extensionList.push_back(NDS_EXT);
+	// extensionList.push_back(NDS_EXT);
+	for (auto e : EXE_EXTS)
+		extensionList.push_back(e);
 	extensionList.push_back(ARG_EXT);
 
 	// Get a list of extension files: argument lists associated with a file type

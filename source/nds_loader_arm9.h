@@ -45,7 +45,7 @@ void installExcptStub(void);
 	#include <vector>
 
 	extern "C++"
-		template<typename T> int runNdsFile(const T & argarray) {
+	template<typename T> int runNdsFile(const T & argarray) {
 		std::vector<const char*> c_args;
 		for(const auto& arg : argarray) {
 			c_args.push_back(arg.data());

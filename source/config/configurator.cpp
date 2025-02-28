@@ -109,7 +109,7 @@ bool dumpConfigsToFile(struct HBLDR_CONFIGS* configs) {
 
 void printErrorAndWaitForA(const char* errorMessage) {
 	iprintf("%s\nPress A to continue", errorMessage);
-	while(1) {
+	while(pmMainLoop()) {
 		scanKeys();
 		if(keysDownRepeat() & KEY_A)
 			return;
@@ -184,14 +184,15 @@ void configMenu(struct HBLDR_CONFIGS* configs) {
 		};
 		
 		printCurEntry();
-		while(true) {
+		// Power saving loop. Only continue when buttons released
+		while(pmMainLoop()) {
 			scanKeys();
 			if((keysHeld() & (KEY_A | KEY_B)) == 0)
 				break;
 			swiWaitForVBlank();
 		}
 
-		while (true) {
+		while (pmMainLoop()) {
 			chdir("fat:/");
 			// Clear old cursors
 			for (int i = 2; i < totalEntries + 2; i++) {
@@ -233,7 +234,7 @@ void configMenu(struct HBLDR_CONFIGS* configs) {
 						printErrorAndWaitForA("Failed to save configs.");
 					}
 				} else {
-					auto entry = browseForFile({".nds", ".dsi", ".srl", ".srldr", "argv"});
+					auto entry = browseForFile(argsGetExtensionList());
 					std::string absPath;
 					toAbsPathCwd(entry, absPath);
 					if(absPath.size() >= sizeof(ENTRY::path)) {
