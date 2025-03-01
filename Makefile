@@ -30,6 +30,8 @@ INCLUDES	:=	include
 DATA		:=	data
 GRAPHICS	:=  gfx
 
+FILENAME	:=	BOOT.NDS
+
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
@@ -139,6 +141,7 @@ endif
 $(BUILD): bootloader bootstub exceptionstub
 	@[ -d $@ ] || mkdir -p $@
 	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
+	@mv $(OUTPUT).nds $(FILENAME)
 
 #---------------------------------------------------------------------------------
 clean:
